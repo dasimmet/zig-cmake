@@ -614,6 +614,7 @@ pub const ConfigHeaders = struct {
         CMAKE_DATA_DIR: []const u8 = "/bootstrap-not-installed",
         CMake_DEFAULT_RECURSION_LIMIT: u16 = 400,
         CMAKE_DOC_DIR: []const u8 = "DOC",
+        CMake_USE_MACH_PARSER: u1 = 0,
         CMake_VERSION_IS_DIRTY: u16 = 1,
         CMake_VERSION_MAJOR: u16 = 3,
         CMake_VERSION_MINOR: u16 = 30,

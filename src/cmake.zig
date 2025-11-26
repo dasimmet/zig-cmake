@@ -668,6 +668,9 @@ pub const ConfigHeaders = struct {
             opts.KWSYS_CXX_HAS_UTIMENSAT = 0;
             opts.KWSYS_CXX_HAS_UTIMES = 0;
         }
+        if (target.result.os.tag == .macos) {
+            opts.CMake_USE_MACH_PARSER = 1;
+        }
 
         inline for (@typeInfo(Options).@"struct".fields) |f| {
             if (b.option(f.type, f.name, f.name ++ " - cmake config header")) |opt| {

@@ -44,6 +44,15 @@ pub fn build(b: *std.Build) void {
         }
     }
 
+    if (target.result.os.tag == .macos) {
+        cmake_bootstrap.addCSourceFiles(.{
+            .files = &.{"cmMachO.cxx"},
+            .root = b.path("Source"),
+            .flags = &Flags.CXX,
+        });
+        cmake_bootstrap.linkFramework("CoreFoundation");
+    }
+
     cmake_bootstrap.addCSourceFiles(.{
         .files = &CMAKE_JSON_SOURCES,
         .root = b.path("Utilities/cmjsoncpp/src/lib_json"),
@@ -197,10 +206,14 @@ pub const LibRHash = struct {
         librh.addCSourceFiles(.{
             .files = Self.C_SOURCES,
             .root = b.path("Utilities/cmlibrhash/librhash"),
-            .flags = &(.{"-DNO_IMPORT_EXPORT"} ++ Flags.C),
+            .flags = &(Flags.C),
         });
         librh.addIncludePath(b.path("Utilities/cmlibrhash/librhash"));
         librh.addIncludePath(b.path("Utilities"));
+        librh.root_module.addCMacro("NO_IMPORT_EXPORT", "");
+        librh.root_module.addCMacro("_POSIX_VERSION", "200112L");
+        librh.root_module.addCMacro("_XOPEN_SOURCE", "600");
+
         return librh;
     }
 

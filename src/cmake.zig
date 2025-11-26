@@ -142,7 +142,6 @@ pub fn addMacros(b: *std.Build, comp: *std.Build.Step.Compile) void {
         .{ "CMAKE_BOOTSTRAP_MAKEFILES", "1" },
         .{ "CMake_HAVE_CXX_MAKE_UNIQUE", "1" },
         .{ "CMake_HAVE_CXX_FILESYSTEM", "1" },
-        // .{ "_WIN32_WINNT", "0x0600" },
     }) |macro| {
         comp.root_module.addCMacro(macro[0], macro[1]);
     }
@@ -157,12 +156,15 @@ pub const Flags = struct {
         "-pedantic",
         "-Wall",
         "-Werror-implicit-function-declaration",
-        // "-Werror",
+        "-Werror",
         "-Wextra",
         "-Wformat-security",
         "-Wformat-y2k",
         "-Wformat",
         "-Wmissing-format-attribute",
+        "-Wno-cast-function-type-mismatch",
+        "-Wno-error=#warnings",
+        "-Wno-error=non-virtual-dtor",
         "-Wno-error=unused-function",
         "-Wno-error=unused",
         "-Wno-nested-anon-types",
@@ -173,7 +175,6 @@ pub const Flags = struct {
         "-Wpointer-arith",
         "-Wundef",
         "-Wwrite-strings",
-        // "-Wformat-nonliteral",
     };
     pub const C = .{
         "-std=c11",

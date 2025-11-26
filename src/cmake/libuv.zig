@@ -11,19 +11,26 @@ pub fn build(b: *std.Build, opt: anytype) *std.Build.Step.Compile {
     });
     libuv.linkLibC();
     cmake.addMacros(b, libuv);
-    libuv.addCSourceFiles(.{
-        .files = LibUV.C_SOURCES,
-        .root = b.path("Utilities/cmlibuv/src"),
-        .flags = &.{"-D_GNU_SOURCE"},
-    });
     if (libuv.rootModuleTarget().os.tag == .windows) {
+        libuv.addCSourceFiles(.{
+            .files = LibUV.C_WIN_SOURCES,
+            .root = b.path("Utilities/cmlibuv/src"),
+            .flags = &.{"-D_GNU_SOURCE"},
+        });
         libuv.addCSourceFiles(.{
             .files = LibUV.WIN_C_SOURCES,
             .root = b.path("Utilities/cmlibuv/src/win"),
             .flags = &.{"-D_GNU_SOURCE"},
         });
-        // libuv.addIncludePath(b.path("Utilities/cmlibuv/src/win"));
+        libuv.addIncludePath(b.path("Utilities/cmlibuv/src/win"));
+        libuv.root_module.addCMacro("WIN32_LEAN_AND_MEAN", "");
+        libuv.root_module.addCMacro("_WIN32_WINNT", "0x0600");
     } else {
+        libuv.addCSourceFiles(.{
+            .files = LibUV.C_SOURCES,
+            .root = b.path("Utilities/cmlibuv/src"),
+            .flags = &.{"-D_GNU_SOURCE"},
+        });
         libuv.addCSourceFiles(.{
             .files = LibUV.UNIX_C_SOURCES,
             .root = b.path("Utilities/cmlibuv/src/unix"),
@@ -69,6 +76,17 @@ pub const WIN_C_SOURCES = &.{
     "util.c",
     "winapi.c",
     "winsock.c",
+};
+
+pub const C_WIN_SOURCES = &.{
+    "fs-poll.c",
+    "idna.c",
+    "inet.c",
+    "threadpool.c",
+    "strscpy.c",
+    "strtok.c",
+    "timer.c",
+    "uv-common.c",
 };
 
 pub const C_SOURCES = &.{

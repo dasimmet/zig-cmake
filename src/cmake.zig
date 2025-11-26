@@ -32,6 +32,18 @@ pub fn build(b: *std.Build) void {
         .root = b.path("Source"),
         .flags = &Flags.CXX,
     });
+
+    if (target.result.os.tag == .windows) {
+        cmake_bootstrap.addCSourceFiles(.{
+            .files = &CMAKE_CXX_WIN_SOURCES,
+            .root = b.path("Source"),
+            .flags = &Flags.CXX,
+        });
+        inline for (&CMAKE_WIN_LIBS) |lib| {
+            cmake_bootstrap.linkSystemLibrary(lib);
+        }
+    }
+
     cmake_bootstrap.addCSourceFiles(.{
         .files = &CMAKE_JSON_SOURCES,
         .root = b.path("Utilities/cmjsoncpp/src/lib_json"),
@@ -101,12 +113,7 @@ pub fn addMacros(b: *std.Build, comp: *std.Build.Step.Compile) void {
     const target = comp.rootModuleTarget();
     const not_on_windows = if (target.os.tag == .windows) "0" else "1";
     const on_windows = if (target.os.tag == .windows) "1" else "0";
-    // if (target.os.tag == .windows) {
-    //     comp.root_module.addCMacro(
-    //         "KWSYS_ENCODING_DEFAULT_CODEPAGE",
-    //         "CP_ACP",
-    //     );
-    // }
+
     inline for (.{
         // kwsys
         .{ "KWSYS_C_HAS_CLOCK_GETTIME_MONOTONIC", "0" },
@@ -135,6 +142,7 @@ pub fn addMacros(b: *std.Build, comp: *std.Build.Step.Compile) void {
         .{ "CMAKE_BOOTSTRAP_MAKEFILES", "1" },
         .{ "CMake_HAVE_CXX_MAKE_UNIQUE", "1" },
         .{ "CMake_HAVE_CXX_FILESYSTEM", "1" },
+        // .{ "_WIN32_WINNT", "0x0600" },
     }) |macro| {
         comp.root_module.addCMacro(macro[0], macro[1]);
     }
@@ -149,7 +157,7 @@ pub const Flags = struct {
         "-pedantic",
         "-Wall",
         "-Werror-implicit-function-declaration",
-        "-Werror",
+        // "-Werror",
         "-Wextra",
         "-Wformat-security",
         "-Wformat-y2k",
@@ -234,20 +242,15 @@ pub const KwSys = struct {
             .root = b.path("Source/kwsys"),
             .flags = &Flags.CXX,
         });
-        kwsys.addCSourceFiles(.{
-            .files = &Self.C_SOURCES,
-            .root = b.path("Source/kwsys"),
-            .flags = &Flags.C,
-        });
         if (kwsys.rootModuleTarget().os.tag == .windows) {
             kwsys.addCSourceFiles(.{
-                .files = &.{"ProcessWin32.c"},
+                .files = &Self.C_WIN_SOURCES,
                 .root = b.path("Source/kwsys"),
                 .flags = &Flags.C,
             });
         } else {
             kwsys.addCSourceFiles(.{
-                .files = &.{"ProcessUNIX.c"},
+                .files = &Self.C_SOURCES,
                 .root = b.path("Source/kwsys"),
                 .flags = &Flags.C,
             });
@@ -266,10 +269,28 @@ pub const KwSys = struct {
     };
     pub const C_SOURCES = .{
         "EncodingC.c",
+        "ProcessUNIX.c",
         "String.c",
         "System.c",
         "Terminal.c",
     };
+    pub const C_WIN_SOURCES = .{
+        "EncodingC.c",
+        "ProcessWin32.c",
+        "String.c",
+        "System.c",
+        "Terminal.c",
+    };
+};
+
+const CMAKE_WIN_LIBS = .{
+    "ws2_32",
+    "psapi",
+    "iphlpapi",
+    "shell32",
+    "userenv",
+    "ole32",
+    "oleaut32",
 };
 
 const CMAKE_JSON_SOURCES = .{
@@ -529,6 +550,12 @@ const CMAKE_CXX_SOURCES = .{
     "cmXcFramework.cxx",
 };
 
+const CMAKE_CXX_WIN_SOURCES = .{
+    "cmGlobalMSYSMakefileGenerator.cxx",
+    "cmGlobalMinGWMakefileGenerator.cxx",
+    "cmVSSetupHelper.cxx",
+};
+
 pub const LexerParser = struct {
     pub fn build(b: *std.Build, opt: anytype) *std.Build.Step.Compile {
         const lexer = b.addStaticLibrary(.{
@@ -632,8 +659,7 @@ pub const ConfigHeaders = struct {
                 @field(opts, f.name) = opt;
             }
         }
-        var acc = std.ArrayList(*std.Build.Step.ConfigHeader).init(b.allocator);
-        inline for (.{
+        const cm_config_headers = [_]struct { []const u8, []const u8 }{
             .{ "Source/cmConfigure.cmake.h.in", "cmConfigure.h" },
             .{ "Source/cmVersionConfig.h.in", "cmVersionConfig.h" },
             .{ "Source/kwsys/Base64.h.in", "cmsys/Base64.h" },
@@ -657,12 +683,14 @@ pub const ConfigHeaders = struct {
             .{ "Source/kwsys/Terminal.h.in", "cmsys/Terminal.h" },
             .{ "Utilities/cmThirdParty.h.in", "cmThirdParty.h" },
             .{ "Utilities/std/cmSTL.hxx.in", "cmSTL.hxx" },
-        }) |tpl| {
-            acc.append(b.addConfigHeader(.{
+        };
+        var acc: [cm_config_headers.len]*std.Build.Step.ConfigHeader = undefined;
+        for (&cm_config_headers, 0..) |tpl, i| {
+            acc[i] = b.addConfigHeader(.{
                 .include_path = tpl[1],
                 .style = .{ .cmake = b.path(tpl[0]) },
-            }, opts)) catch @panic("OOM");
+            }, opts);
         }
-        return acc.toOwnedSlice() catch @panic("OOM");
+        return b.allocator.dupe(*std.Build.Step.ConfigHeader, &acc) catch @panic("OOM");
     }
 };

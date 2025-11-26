@@ -14,15 +14,16 @@ build.zig (from [example](./example/build.zig)):
 pub fn build() void {
   const cmake_import = b.lazyImport(@This(), "cmake");
 
-  if (cmake_import) |cmake| {}
-  const cmakeStep = cmake.addCMakeStep(b, .{
-    .target = b.standardTargetOptions(.{}),
-    .name = "cmake_my_project",
-    .source_dir = b.path(""), // or path to directory containing CMakeLists.txt
-      .defines = &.{
-          .{ "CMAKE_BUILD_TYPE", if (optimize == .Debug) "Debug" else "Release" },
-      },
-  });
+  if (cmake_import) |cmake| {
+    const cmakeStep = cmake.addCMakeStep(b, .{
+      .target = b.standardTargetOptions(.{}),
+      .name = "cmake_my_project",
+      .source_dir = b.path(""), // or path to directory containing CMakeLists.txt
+        .defines = &.{
+            .{ "CMAKE_BUILD_TYPE", if (optimize == .Debug) "Debug" else "Release" },
+        },
+    });
+  }
   const install_step = cmakeStep.install(b, ""); // installs the 
   b.getInstallStep().dependOn(&install_step.step);
 }
@@ -34,7 +35,7 @@ pub fn build() void {
   - ✅ stage1 linux
   - ✅ running bootstrap `cmake` to reconfigure itself with `CC=zig cc`
   - ✅ use zig built `make` to rebuild `cmake`
-  - 🏃‍♂️ stage1 windows
+  - ✅ stage1 windows
   - 🏃‍♂️ stage1 macos
   - 🏃‍♂️test building other cmake projects
   - 🏃‍♂️try to link cmake fully static

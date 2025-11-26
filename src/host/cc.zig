@@ -18,10 +18,10 @@ pub fn subcommand(env_key: []const u8, cmd: []const []const u8) !void {
         subcommand_found = true;
     }
     try args.appendSlice(cmd);
-    var p_args = std.process.args();
+    const p_args = try std.process.argsAlloc(arena.allocator());
     var last_arg: []const u8 = "";
-    var i: usize = 0;
-    while (p_args.next()) |arg| : (i += 1) {
+
+    for (p_args, 0..) |arg, i| {
         if (i == 0) {
             if (!subcommand_found) {
                 const message =

@@ -13,12 +13,13 @@ pub fn main() !void {
     var build_dir: []const u8 = undefined;
     var install_dir: []const u8 = undefined;
     var cmake_gmake_arg: []const u8 = undefined;
-    var p_args = std.process.args();
-    var i: usize = 0;
+    const p_args = try std.process.argsAlloc(allocator);
+    if (p_args.len < 5) return error.NotEnoughArguments;
+
     var arg0: []const u8 = undefined;
     var parallel_buf: [20]u8 = undefined;
     const gm_parallel_arg = try std.fmt.bufPrint(&parallel_buf, "-j{d}", .{std.Thread.getCpuCount() catch 1});
-    while (p_args.next()) |arg| : (i += 1) {
+    for (p_args, 0..) |arg, i| {
         if (i == 0) {
             arg0 = arg;
         } else if (i == 1) { // path to CMAKE
@@ -66,7 +67,6 @@ pub fn main() !void {
             return error.UnknownArgument;
         }
     }
-    if (i < 4) return error.NotEnoughArguments;
     const done_file = try std.fs.path.join(allocator, &.{
         std.fs.path.dirname(install_dir).?,
         "done",

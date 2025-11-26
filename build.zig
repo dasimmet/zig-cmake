@@ -11,7 +11,6 @@ pub const cmake = @import("src/cmake.zig");
 pub const DefaultBuildOptions = struct {
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
-    global_cache: bool,
 };
 
 pub fn build(b: *std.Build) void {
@@ -25,11 +24,7 @@ pub fn build(b: *std.Build) void {
             "optimize",
             "Prioritize performance, safety, or binary size",
         ) orelse .ReleaseFast,
-        .global_cache = b.option(bool, "global_cache", "set cache to zig global cache dir") orelse false,
     };
-    if (defaults.global_cache) {
-        b.cache_root = b.graph.global_cache_root;
-    }
 
     if (b.option(
         SubBuild,
@@ -64,10 +59,8 @@ pub fn build(b: *std.Build) void {
 pub fn addCMakeStep(b: *std.Build, opt: cmake.CMakeStep.Options) *cmake.CMakeStep {
     const this_dep = b.dependencyFromBuildZig(zig_cmake, .{
         .dependency = .cmake,
-        .global_cache = opt.global_cache,
     });
 
-    if (opt.global_cache) this_dep.builder.cache_root = b.graph.global_cache_root;
     if (opt.toolchain == null) {
         this_dep.builder.verbose = false;
         const tc = cmake.Toolchain.zigBuildDefaults(this_dep.builder, .{});
@@ -75,7 +68,6 @@ pub fn addCMakeStep(b: *std.Build, opt: cmake.CMakeStep.Options) *cmake.CMakeSte
         if (this_dep.builder.lazyDependency("gnumake", .{
             .target = b.graph.host,
         })) |gnumake| {
-            if (opt.global_cache) gnumake.builder.cache_root = b.graph.global_cache_root;
             const gnumake_exe = gnumake.artifact("make");
             tc.MAKE = gnumake_exe.getEmittedBin();
         }
@@ -86,7 +78,6 @@ pub fn addCMakeStep(b: *std.Build, opt: cmake.CMakeStep.Options) *cmake.CMakeSte
             .toolchain = tc,
             .verbose = opt.verbose,
             .defines = opt.defines,
-            .global_cache = opt.global_cache,
             .remove_build = opt.remove_build,
         });
     }
@@ -109,7 +100,6 @@ fn addCMakeBootstrap(b: *std.Build, defaults: DefaultBuildOptions) void {
     var cmake_options: CMakeOptionsType = .{
         .target = defaults.target,
         .optimize = defaults.optimize,
-        .global_cache = defaults.global_cache,
     };
     inline for (@typeInfo(cmake.ConfigHeaders.Options).@"struct".fields) |f| {
         if (b.option(f.type, "CMAKE_" ++ f.name, "cmake - " ++ f.name)) |opt| {
@@ -135,9 +125,6 @@ fn addCMakeBootstrap(b: *std.Build, defaults: DefaultBuildOptions) void {
         .target = cmake_stage1_target,
         .optimize = defaults.optimize,
     })) |dep| {
-        if (defaults.global_cache) {
-            dep.builder.cache_root = b.graph.global_cache_root;
-        }
         cmake.build(dep.builder);
         const stage1_step = b.step("cmake-stage1", "build the cmake stage1 exe");
         inline for (.{ "cmake", "uv" }) |f| {
@@ -162,9 +149,6 @@ fn addCMakeBootstrap(b: *std.Build, defaults: DefaultBuildOptions) void {
             .target = cmake_options.target,
             .optimize = cmake_options.optimize,
         })) |gnumake| {
-            if (cmake_options.global_cache) {
-                gnumake.builder.cache_root = b.graph.global_cache_root;
-            }
             const gnumake_exe = gnumake.artifact("make");
             cmake_tc.MAKE = gnumake_exe.getEmittedBin();
         }

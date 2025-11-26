@@ -14,8 +14,6 @@ toolchain: *Toolchain,
 pub const Options = struct {
     //"-D" defines for cmake
     defines: []const struct { []const u8, []const u8 } = &.{},
-    //store the built cmake in global instead of project local cache
-    global_cache: bool = false,
     //additional options added to the MAKEFLAGS env var
     makeflags: []const u8 = "",
     name: []const u8,

@@ -7,24 +7,23 @@ but can be used to build your C/C++ dependency libraries.
 the package also has a custom `CMakeStep` that will configure and build and install a cmake project,
 and providdes a `.install(b, name)` function to get the artifacts:
 ```
-zig fetch --save git+https://github.com/dasimmet/zig-cmakearchive.git
+zig fetch --save git+https://github.com/dasimmet/zig-cmake.git
 ```
 build.zig (from [example](./example/build.zig)):
 ```
 pub fn build() void {
-  const meta_import = b.lazyImport(@This(), "meta_allyourcode");
+  const cmake_import = b.lazyImport(@This(), "cmake");
 
-  if (meta_import) |meta_allyourcode| {}
-  const cmakeStep = meta_allyourcode.addCMakeStep(b, .{
+  if (cmake_import) |cmake| {}
+  const cmakeStep = cmake.addCMakeStep(b, .{
     .target = b.standardTargetOptions(.{}),
-    .name = "cmake",
-    .source_dir = b.path(""),
+    .name = "cmake_my_project",
+    .source_dir = b.path(""), // or path to directory containing CMakeLists.txt
       .defines = &.{
           .{ "CMAKE_BUILD_TYPE", if (optimize == .Debug) "Debug" else "Release" },
       },
   });
-  cmakeStep.addCmakeDefine();
-  const install_step = cmakeStep.install(b, "");
+  const install_step = cmakeStep.install(b, ""); // installs the 
   b.getInstallStep().dependOn(&install_step.step);
 }
 ```
@@ -38,5 +37,5 @@ pub fn build() void {
   - 🏃‍♂️ stage1 windows
   - 🏃‍♂️ stage1 macos
   - 🏃‍♂️test building other cmake projects
-  - try to link cmake fully static
-  - test other architectures
+  - 🏃‍♂️try to link cmake fully static
+  - 🏃‍♂️test other architectures

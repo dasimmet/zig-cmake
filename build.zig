@@ -1,9 +1,9 @@
-// meta_allyourcode
+// zig-cmake
 //
 // by Tobias Simetsreiter <dasimmet@gmail.com>
 //
 
-const meta_allyourcode = @This();
+const zig_cmake = @This();
 const std = @import("std");
 const builtin = @import("builtin");
 pub const cmake = @import("src/cmake.zig");
@@ -62,7 +62,7 @@ pub fn build(b: *std.Build) void {
 }
 
 pub fn addCMakeStep(b: *std.Build, opt: cmake.CMakeStep.Options) *cmake.CMakeStep {
-    const this_dep = b.dependencyFromBuildZig(meta_allyourcode, .{
+    const this_dep = b.dependencyFromBuildZig(zig_cmake, .{
         .dependency = .cmake,
         .global_cache = opt.global_cache,
     });

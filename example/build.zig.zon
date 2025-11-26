@@ -15,9 +15,5 @@
             .url = "https://github.com/alex85k/sqlite3-cmake/archive/refs/heads/master.tar.gz",
             .hash = "122074cbb152f9a80b886471e8b7d7c76b1b440d3f9035e12d694de5639de8434626",
         },
-        .llvm = .{
-            .url = "git+https://github.com/llvm/llvm-project.git#75ca83563de13ebbf381a0e9e9d97dfbf98ea0f5",
-            .hash = "N-V-__8AAG8N8HXFXBSLaGEb1VBTKdztz5mvuz1xJaJEupde",
-        },
     },
 }

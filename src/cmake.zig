@@ -101,17 +101,17 @@ pub fn stage2(b: *std.Build, tc: *Toolchain, target: std.Build.ResolvedTarget) *
 
     inline for (.{
         .{ "BUILD_CMAKE_FROM_SOURCE", "1" },
-        .{ "CMAKE_BIN_DIR", "" },
+        .{ "CMAKE_BIN_DIR", "bin" },
         .{ "CMAKE_BUILD_TYPE", "Release" },
-        .{ "CMAKE_DATA_DIR", "" },
-        .{ "CMAKE_DOC_DIR", "" },
+        .{ "CMAKE_DATA_DIR", "share/cmake" },
+        .{ "CMAKE_DOC_DIR", "share/doc/cmake" },
         .{ "CMAKE_EXE_LINKER_FLAGS", "-s -static -static-libgcc -static-libstdc++" },
         .{ "CMAKE_FIND_LIBRARY_SUFFIXES", ".a" },
-        .{ "CMAKE_MAN_DIR", "" },
+        .{ "CMAKE_MAN_DIR", "share/man" },
         .{ "CMAKE_SIZEOF_VOID_P", "8" },
         .{ "CMAKE_USE_OPENSSL", "0" },
         .{ "CMAKE_USE_SYSTEM_LIBRARIES", "0" },
-        .{ "CMAKE_XDGDATA_DIR", "" },
+        .{ "CMAKE_XDGDATA_DIR", "share" },
     }) |arg| {
         cmakeStep.addCmakeDefine(arg[0], arg[1]);
     }

@@ -29,14 +29,20 @@ pub fn build() void {
 }
 ```
 
-## integrated builds
+# Supported
 
-- cmake (including custom build step?)
-  - ✅ stage1 linux
-  - ✅ running bootstrap `cmake` to reconfigure itself with `CC=zig cc`
-  - ✅ use zig built `make` to rebuild `cmake`
-  - ✅ stage1 windows
-  - 🏃‍♂️ stage1 macos
-  - 🏃‍♂️test building other cmake projects
-  - 🏃‍♂️try to link cmake fully static
-  - 🏃‍♂️test other architectures
+- ✅ stage1 linux
+- ✅ stage2 linux
+- ✅ example build step linux
+
+- ✅ stage1 windows
+- 🏃‍♂️ stage2 windows
+- 🏃‍♂️ example build step windows
+
+- ✅ stage1 macos
+- 🏃‍♂️ stage2 macos
+- 🏃‍♂️ example build step macos
+
+- 🏃‍♂️test building other cmake projects
+- 🏃‍♂️try to link cmake fully static
+- 🏃‍♂️test other architectures

@@ -146,7 +146,7 @@ fn addCMakeBootstrap(b: *std.Build, defaults: DefaultBuildOptions) void {
         cmake_tc.CMAKE = dep.artifact("cmake").getEmittedBin();
 
         if (b.lazyDependency("gnumake", .{
-            .target = cmake_options.target,
+            .target = b.graph.host,
             .optimize = cmake_options.optimize,
         })) |gnumake| {
             const gnumake_exe = gnumake.artifact("make");

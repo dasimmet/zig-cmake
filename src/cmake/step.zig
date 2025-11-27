@@ -88,8 +88,26 @@ pub fn init(b: *std.Build, opt: Options) *CmakeStep {
     }) |it| {
         addCmakeDefine(self, it[0], it[1]);
     }
+
+    self.addCmakeDefine("CMAKE_SYSTEM_NAME", switch (target.result.os.tag) {
+        .linux => "Linux",
+        .windows => "Windows",
+        .macos => "MacOS",
+        else => "",
+    });
+
+    self.addCmakeDefine("CMAKE_HOST_SYSTEM_NAME", switch (b.graph.host.result.os.tag) {
+        .linux => "Linux",
+        .windows => "Windows",
+        .macos => "MacOS",
+        else => "",
+    });
+
+    self.addCmakeDefine("CMAKE_SYSTEM_PROCESSOR", @tagName(target.result.cpu.arch));
+
     for (opt.defines) |it|
         addCmakeDefine(self, it[0], it[1]);
+
     return self;
 }
 

@@ -116,22 +116,6 @@ pub fn stage2(b: *std.Build, tc: *Toolchain, target: std.Build.ResolvedTarget) *
         cmakeStep.addCmakeDefine(arg[0], arg[1]);
     }
 
-    cmakeStep.addCmakeDefine("CMAKE_SYSTEM_NAME", switch (target.result.os.tag) {
-        .linux => "Linux",
-        .windows => "Windows",
-        .macos => "MacOS",
-        else => "",
-    });
-
-    cmakeStep.addCmakeDefine("CMAKE_HOST_SYSTEM_NAME", switch (b.graph.host.result.os.tag) {
-        .linux => "Linux",
-        .windows => "Windows",
-        .macos => "MacOS",
-        else => "",
-    });
-
-    cmakeStep.addCmakeDefine("CMAKE_SYSTEM_PROCESSOR", @tagName(target.result.cpu.arch));
-
     return cmakeStep;
 }
 
